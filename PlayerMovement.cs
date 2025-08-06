@@ -43,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Wall Climbing")]
     public bool isClimbing;
-    float start = 0f, interval1 = 0.52f, interval2 = 0.69f, delay = 0.5f;
+    float start = 0f, interval1 = 0.52f, interval2 = 0.69f, delay = 0.51f;
     public Vector3 targetPosition, targetRotation, nextPosition;
     [SerializeField]
     Transform head, target;
@@ -225,7 +225,7 @@ public class PlayerMovement : MonoBehaviour
                     Vector2 gap = Vector2.zero;
                     
                     if (Mathf.Floor((elapsed - delay) / interval2) != Mathf.Floor(((elapsed - delay) - Time.deltaTime) / interval2))
-                        gap += new Vector2(1.75f * movementX, 0f);
+                        gap += new Vector2(2f * movementX, 0f);
                     
                     if (movementX != 0f && movementZ != 0f)
                     {
