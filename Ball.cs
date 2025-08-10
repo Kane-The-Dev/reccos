@@ -59,6 +59,11 @@ public class Ball : MonoBehaviour
 
     public IEnumerator ActivateKickBall(Vector3 kickDir, float delay)
     {
+        //Debug.Log(kickDir.magnitude);
+        float volume = 0.25f + kickDir.magnitude / 20f;
+        if (volume > 1f) volume = 1f;
+        SoundManager.PlaySound(SoundType.KICK, volume);
+
         if (gm.isSingleplayer) {
             yield return new WaitForSeconds(delay);
             isDribbling = false;
