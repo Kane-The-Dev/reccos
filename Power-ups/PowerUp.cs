@@ -89,6 +89,7 @@ public class PowerUp : MonoBehaviour
         
             case 4: // sneaky scorer
             pm.SpawnSmoke();
+            if (pm.isInvisible != true)
             pm.speed += pm.defaultSpeed * speedBuff;
             pm.isInvisible = true;
             break;

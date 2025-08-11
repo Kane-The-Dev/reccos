@@ -79,11 +79,10 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Particle Effects")]
     public ParticleSystemForceField psff;
-    public GameObject landingEffect1, landingEffect2, runningEffect;
+    public GameObject landingEffect1, landingEffect2;
     [SerializeField]
-    Transform effectSpawnPoint, leftFoot, rightFoot;
+    Transform effectSpawnPoint;
     public float inAirTime = 0.5f;
-    Coroutine runEffectLoop;
 
     [Header("Animation")]
     public GameObject model;
@@ -160,7 +159,11 @@ public class PlayerMovement : MonoBehaviour
         if ((view.IsMine || gm.isSingleplayer))
         {
             if (!isGrounded)
-            inAirTime += Time.deltaTime;
+            {
+                inAirTime += Time.deltaTime;
+                if (rb.velocity.y < 0 && !usingJetpack)
+                    rb.velocity += Physics.gravity * 0.5f * Time.deltaTime; // faster fall = better jump
+            }
 
             if (!gm.gameEnded)
             {
@@ -189,17 +192,6 @@ public class PlayerMovement : MonoBehaviour
                 
                 if (movingAllowed && !isClimbing)
                 {
-                    bool run = animator.GetBool("isRunning") && isGrounded;
-                    if (run && runEffectLoop == null)
-                    {
-                        runEffectLoop = StartCoroutine(RunningEffect());
-                    }
-                    else if (!run && runEffectLoop != null)
-                    {
-                        StopCoroutine(runEffectLoop);
-                        runEffectLoop = null;
-                    }
-
                     animator.SetBool("isClimbing", false);
                     animator.SetBool("isRunning", true);
 
@@ -680,12 +672,13 @@ public class PlayerMovement : MonoBehaviour
         return velocity;
     }
 
-    IEnumerator RunningEffect()
+    /*IEnumerator RunningEffect()
     {
         yield return new WaitForSeconds(0.5f);
     
         while (animator.GetBool("isRunning") && isGrounded)
         {
+            SoundManager.PlaySound(SoundType.RUN, 1);
             if (gm.isSingleplayer)
                 Instantiate(runningEffect, leftFoot.position, Quaternion.Euler(-90f, transform.eulerAngles.y, 0f));
             else if (view.IsMine)
@@ -694,6 +687,7 @@ public class PlayerMovement : MonoBehaviour
             yield return new WaitForSeconds(0.47f);
             if(!(animator.GetBool("isRunning") && isGrounded)) continue;
 
+            SoundManager.PlaySound(SoundType.RUN, 1);
             if (gm.isSingleplayer)
                 Instantiate(runningEffect, rightFoot.position, Quaternion.Euler(-90f, transform.eulerAngles.y, 0f));
             else if (view.IsMine)
@@ -701,7 +695,7 @@ public class PlayerMovement : MonoBehaviour
             
             yield return new WaitForSeconds(0.47f);
         }
-    }
+    }*/
 
     IEnumerator DebuggingTool()
     {
