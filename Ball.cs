@@ -10,6 +10,7 @@ public class Ball : MonoBehaviour
     public Rigidbody rb;
     public PhotonView view;
     GameManager gm;
+    public TrailRenderer trail;
     
     public float hostPing = 0f;
     public GameObject model, collidingEffect, ballHolder;
@@ -31,7 +32,7 @@ public class Ball : MonoBehaviour
         {
             if (gm.isSingleplayer)
                 Destroy(ballHolder);
-            else
+            else if (PhotonNetwork.IsMasterClient)
                 PhotonNetwork.Destroy(ballHolder);
         }
         
