@@ -43,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Wall Climbing")]
     public bool isClimbing;
-    float start = 0f, interval1 = 0.52f, interval2 = 0.69f, delay = 0.51f;
+    //float start = 0f, interval1 = 0.52f, interval2 = 0.69f, delay = 0.51f;
     public Vector3 targetPosition, targetRotation, nextPosition;
     [SerializeField]
     Transform head, target;
@@ -188,7 +188,12 @@ public class PlayerMovement : MonoBehaviour
             {
                 float targetAngle = cam.eulerAngles.y;
                 float moveAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + targetAngle;
-                float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, moveAngle, ref turnSmoothVelocity, turnSmoothTime);
+                float angle = Mathf.SmoothDampAngle(
+                    transform.eulerAngles.y, 
+                    moveAngle, 
+                    ref turnSmoothVelocity, 
+                    turnSmoothTime
+                );
                 
                 if (movingAllowed && !isClimbing)
                 {
@@ -203,8 +208,8 @@ public class PlayerMovement : MonoBehaviour
                 }
                 else if (isClimbing) // climbing
                 {
-                    if (start <= 0f)
-                    start = Time.time;
+                    //if (start <= 0f)
+                    //start = Time.time;
                     animator.SetInteger("climbDirection", 0);
 
                     if (movementZ > 0) animator.SetInteger("climbDirection", 1);
@@ -213,6 +218,7 @@ public class PlayerMovement : MonoBehaviour
                     if (movementX > 0) animator.SetInteger("climbDirection", 2);
                     else if (movementX < 0) animator.SetInteger("climbDirection", 4);
 
+                    /*
                     float elapsed = Time.time - start;
                     Vector2 gap = Vector2.zero;
                     
@@ -229,33 +235,26 @@ public class PlayerMovement : MonoBehaviour
                         if (Mathf.Floor(elapsed / interval1) != Mathf.Floor((elapsed - Time.deltaTime) / interval1))
                         gap += new Vector2(0f, 1.25f * movementZ);
                     }
-                    
 
                     if (gap != Vector2.zero)
                         nextPosition = transform.position + transform.TransformDirection(gap) * 1f;
+                    */
 
                     if (nextPosition != Vector3.zero)
                         transform.position = Vector3.Lerp(transform.position, nextPosition, 4f * Time.deltaTime);
                 }
-
-                /*if (transform.position.y < 2.8f)
-                {
-                    if (gm.isSingleplayer)
-                    Instantiate(runningEffect1,effectSpawnPoint.position,Quaternion.Euler(0f,moveAngle+180f,0f));
-                    else if (!gm.isSingleplayer)
-                    PhotonNetwork.Instantiate(runningEffect1.name,effectSpawnPoint.position,Quaternion.Euler(0f,moveAngle+180f,0f));
-                }*/
             }
             else
             {
+                animator.SetBool("isRunning", false);
+
                 if (isClimbing)
                 {
-                    start = 0f;
+                    //start = 0f;
                     animator.SetBool("isClimbing", true);
                     animator.SetInteger("climbDirection", 0);
                 }
-
-                animator.SetBool("isRunning", false);
+                
                 if (movingAllowed)
                     rb.velocity = new Vector3(rb.velocity.x * 0.95f, rb.velocity.y, rb.velocity.z * 0.95f);
             }
@@ -267,7 +266,11 @@ public class PlayerMovement : MonoBehaviour
 
             if (isDribbling && ball)
             {
-                float ballDistance = Mathf.Min(Vector3.Distance(ballTransform.position, left.position), Vector3.Distance(ballTransform.position, right.position));
+                float ballDistance = Mathf.Min(
+                    Vector3.Distance(ballTransform.position, left.position), 
+                    Vector3.Distance(ballTransform.position, right.position)
+                );
+        
                 if (ballDistance > dribbleRange)
                     isDribbling = false;
             } 
@@ -316,7 +319,11 @@ public class PlayerMovement : MonoBehaviour
                     {
                         animator.SetTrigger("jump");
                         rb.velocity = new Vector3(rb.velocity.x, jumpForce * 0.8f, rb.velocity.z);
-                        GameObject effect = Instantiate(landingEffect1, effectSpawnPoint.position, Quaternion.identity);
+                        GameObject effect = Instantiate(
+                            landingEffect1, 
+                            effectSpawnPoint.position, 
+                            Quaternion.identity
+                        );
                         effect.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
                     }
                     else
@@ -336,7 +343,12 @@ public class PlayerMovement : MonoBehaviour
             //climbing
             if (isClimbing)
             {
-                model.transform.localPosition = Vector3.Lerp(model.transform.localPosition, new Vector3(0f, -1.8f, -0.5f), 10f * Time.deltaTime);
+                model.transform.localPosition = Vector3.Lerp(
+                    model.transform.localPosition, 
+                    new Vector3(0f, -1.8f, -0.5f), 
+                    10f * Time.deltaTime
+                );
+
                 cs.center = Vector3.Lerp(cs.center, new Vector3(0f, -0.4f, -0.4f), 3f * Time.deltaTime);
 
                 RaycastHit hit;
@@ -385,6 +397,7 @@ public class PlayerMovement : MonoBehaviour
 
                 if (targetPosition != Vector3.zero)
                 {
+                    animator.SetBool("isRunning", false);
                     animator.SetBool("isClimbing", true);
                     //Debug.Log(Vector3.Distance(transform.position, targetPosition));
 
@@ -613,13 +626,29 @@ public class PlayerMovement : MonoBehaviour
 
                     if (gm.isSingleplayer)
                     {
-                        Instantiate(fireEffect,jetpackPoint1.position,Quaternion.Euler(-90f,0f,0f));
-                        Instantiate(fireEffect,jetpackPoint2.position,Quaternion.Euler(-90f,0f,0f));
+                        Instantiate(
+                            fireEffect,
+                            jetpackPoint1.position,
+                            Quaternion.Euler(-90f,0f,0f)
+                        );
+                        Instantiate(
+                            fireEffect,
+                            jetpackPoint2.position,
+                            Quaternion.Euler(-90f,0f,0f)
+                        );
                     }
                     else if (!gm.isSingleplayer)
                     {
-                        PhotonNetwork.Instantiate(fireEffect.name,jetpackPoint1.position,Quaternion.Euler(-90f,0f,0f));
-                        PhotonNetwork.Instantiate(fireEffect.name,jetpackPoint2.position,Quaternion.Euler(-90f,0f,0f));
+                        PhotonNetwork.Instantiate(
+                            fireEffect.name,
+                            jetpackPoint1.position,
+                            Quaternion.Euler(-90f,0f,0f)
+                        );
+                        PhotonNetwork.Instantiate(
+                            fireEffect.name,
+                            jetpackPoint2.position,
+                            Quaternion.Euler(-90f,0f,0f)
+                        );
                     }
                     nextEmission = nextEmission - myTime;
                     myTime = 0f;
@@ -631,15 +660,17 @@ public class PlayerMovement : MonoBehaviour
             Vector3 direction = new Vector3(movementX, 0f, movementZ).normalized;
             if (usingJetpack && !isGrounded && direction.magnitude > 0.1f) {
                 model.transform.localRotation = Quaternion.Lerp(
-                model.transform.localRotation,
-                Quaternion.Euler(0f, 90f, 15f),
-                Time.fixedDeltaTime * 5f);
+                    model.transform.localRotation,
+                    Quaternion.Euler(0f, 90f, 15f),
+                    Time.fixedDeltaTime * 5f
+                );
             }
             else {
                 model.transform.localRotation = Quaternion.Lerp(
-                model.transform.localRotation,
-                Quaternion.Euler(0f, 90f, 0f),
-                Time.fixedDeltaTime * 5f);
+                    model.transform.localRotation,
+                    Quaternion.Euler(0f, 90f, 0f),
+                    Time.fixedDeltaTime * 5f
+                );
             }
         }
     }
