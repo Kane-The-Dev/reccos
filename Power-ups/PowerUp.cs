@@ -38,7 +38,7 @@ public class PowerUp : MonoBehaviour
         if (player != null)
         {
             GetComponent<SphereCollider>().enabled = false;
-            transform.parent.localScale = Vector3.Lerp(transform.parent.localScale, Vector3.zero, 10f * Time.deltaTime);
+            transform.parent.localScale = Vector3.MoveTowards(transform.parent.localScale, Vector3.zero, 10f * Time.deltaTime);
         }
     }
 

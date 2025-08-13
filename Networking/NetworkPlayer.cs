@@ -21,24 +21,24 @@ public class NetworkPlayer : MonoBehaviour,IPunObservable
         if (pv.IsMine)
         return;
 
-        var LagDistance=RemotePlayerPosition - transform.position;
-        LagDistance.y=0;
+        var LagDistance = RemotePlayerPosition - transform.position;
+        LagDistance.y = 0;
 
-        if (LagDistance.magnitude>5f)
+        if (LagDistance.magnitude > 5f)
         {
-            transform.position=RemotePlayerPosition;
-            LagDistance=Vector3.zero;
+            transform.position = RemotePlayerPosition;
+            LagDistance = Vector3.zero;
         }
 
-        if (LagDistance.magnitude<=0.1f)
+        if (LagDistance.magnitude <= 0.1f)
         {
-            player.movementX=0;
-            player.movementZ=0;
+            player.movementX = 0;
+            player.movementZ = 0;
         }
         else
         {
-            player.movementX=LagDistance.normalized.x;
-            player.movementZ=LagDistance.normalized.z;
+            player.movementX = LagDistance.normalized.x;
+            player.movementZ = LagDistance.normalized.z;
         }
     }
 
@@ -52,9 +52,9 @@ public class NetworkPlayer : MonoBehaviour,IPunObservable
         }
         else
         {
-            RemotePlayerPosition=(Vector3)stream.ReceiveNext();
-            remoteMovementX=(float)stream.ReceiveNext();
-            remoteMovementZ=(float)stream.ReceiveNext();
+            RemotePlayerPosition = (Vector3)stream.ReceiveNext();
+            remoteMovementX = (float)stream.ReceiveNext();
+            remoteMovementZ = (float)stream.ReceiveNext();
         }
     }
 }

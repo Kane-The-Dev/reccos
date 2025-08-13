@@ -8,10 +8,12 @@ public class FollowServerBall : MonoBehaviour
     [SerializeField]
     Ball serverBall;
     Rigidbody rb;
+    GameManager gm;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        gm = GameManager.instance;
     }
 
     void Update()
@@ -22,7 +24,7 @@ public class FollowServerBall : MonoBehaviour
             serverBall = FindObjectOfType<Ball>();
         }
 
-        if (!PhotonNetwork.IsMasterClient && serverBall)
+        if (!gm.isSingleplayer && !PhotonNetwork.IsMasterClient && serverBall)
         {
             serverBall.model.SetActive(false);
             serverBall.trail.enabled = false;

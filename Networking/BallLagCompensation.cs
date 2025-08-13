@@ -26,9 +26,9 @@ public class BallLagCompensation : MonoBehaviour
         }
         else
         {
-            networkPosition=(Vector3)stream.ReceiveNext();
-            networkRotation=(Quaternion)stream.ReceiveNext();
-            rb.velocity=(Vector3)stream.ReceiveNext();
+            networkPosition = (Vector3)stream.ReceiveNext();
+            networkRotation = (Quaternion)stream.ReceiveNext();
+            rb.velocity = (Vector3)stream.ReceiveNext();
 
             float lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
             rb.position += rb.velocity * lag;
@@ -39,8 +39,8 @@ public class BallLagCompensation : MonoBehaviour
     {
         if (!view.IsMine)
         {
-            rb.position=Vector3.MoveTowards(rb.position,networkPosition,Time.fixedDeltaTime);
-            rb.rotation=Quaternion.RotateTowards(rb.rotation,networkRotation,Time.fixedDeltaTime*100f);
+            rb.position = Vector3.MoveTowards(rb.position,networkPosition,Time.fixedDeltaTime);
+            rb.rotation = Quaternion.RotateTowards(rb.rotation,networkRotation,Time.fixedDeltaTime*100f);
         }
     }
 }

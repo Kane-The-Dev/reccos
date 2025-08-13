@@ -22,10 +22,6 @@ public class Ball : MonoBehaviour
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        view = GetComponent<PhotonView>();
-        gm = GameManager.instance;
-
         if (instance == null)
         instance = this;
         else
@@ -35,9 +31,15 @@ public class Ball : MonoBehaviour
             else if (PhotonNetwork.IsMasterClient)
                 PhotonNetwork.Destroy(ballHolder);
         }
-        
+    }
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        view = GetComponent<PhotonView>();
+        gm = GameManager.instance;
+
         isDribbling = false;
-        //StartCoroutine(GetBallVelocity());
     }
 
     void Update()
