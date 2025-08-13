@@ -17,7 +17,8 @@ public class Goal : MonoBehaviour
     public Transform ballSpawnPoint;
     public GameObject goalEffect;
     public GameObject winningText;
-    public GameObject scoringText;
+    public TextMeshProUGUI scoringText;
+    Vector3 target = new Vector3(-1400,0,0);
     Animator sAnim;
     Animator wAnim;
     GameManager gm;
@@ -33,6 +34,13 @@ public class Goal : MonoBehaviour
     {
         if (ball == null)
         ball = GameObject.FindWithTag("Ball");
+
+        if(scoringText.rectTransform.position != target)
+            scoringText.rectTransform.anchoredPosition = Vector3.MoveTowards(
+                scoringText.rectTransform.anchoredPosition,
+                target,
+                300f * Time.deltaTime
+            );
     }
 
     private void OnTriggerEnter(Collider collision)
@@ -48,27 +56,27 @@ public class Goal : MonoBehaviour
 
             if (gm.isSingleplayer)
             {
-                Instantiate(goalEffect,ballTransform.position,Quaternion.identity);
+                Instantiate(goalEffect, ballTransform.position, Quaternion.identity);
                 Destroy(ballTransform.parent.gameObject);
             }
             else if (PhotonNetwork.IsMasterClient)
             {
-                PhotonNetwork.Instantiate(goalEffect.name,ballTransform.position,Quaternion.identity);
+                PhotonNetwork.Instantiate(goalEffect.name, ballTransform.position, Quaternion.identity);
                 PhotonNetwork.Destroy(ballTransform.parent.gameObject);
             }
 
             if (score < scoreToWin)
             {
-                Invoke("SpawnBall",0.01f);
+                Invoke("SpawnBall", 0.01f);
                 //sAnim.SetBool("slideIn",true);
                 //sAnim.SetBool("slideOut",false);
                 //Invoke("BallScored",5f);
             }
             else
             {
+                gm.gameEnded = true;
                 //wAnim.SetBool("slideIn",true);
                 //wAnim.SetBool("slideOut",false);
-                gm.gameEnded=true;
                 //Invoke("GameEnded",5f);
             } 
         }
@@ -76,32 +84,33 @@ public class Goal : MonoBehaviour
 
     void BallScored()
     {
-        sAnim.SetBool("slideOut",true);
-        sAnim.SetBool("slideIn",false);
+        sAnim.SetBool("slideOut", true);
+        sAnim.SetBool("slideIn", false);
     }
     
     void GameEnded()
     {
-        wAnim.SetBool("slideOut",true);
-        wAnim.SetBool("slideIn",false);
+        wAnim.SetBool("slideOut", true);
+        wAnim.SetBool("slideIn", false);
     }
 
     void SpawnBall()
     {
         if (gm.isSingleplayer)
-        Instantiate(ballPrefab,ballSpawnPoint);
+            Instantiate(ballPrefab, ballSpawnPoint);
         else
-        PhotonNetwork.InstantiateRoomObject(ballPrefab.name,ballSpawnPoint.position,Quaternion.identity);
+            PhotonNetwork.InstantiateRoomObject(ballPrefab.name, ballSpawnPoint.position, Quaternion.identity);
     }
 
     [PunRPC]
     void ChangeScore()
     {
-        FindObjectOfType<PlayerCamera>().Shake(2f,0.5f);
+        FindObjectOfType<PlayerCamera>().Shake(2f, 0.5f);
         score++;
         foreach(Text text in scoreDisplays)
         text.text = score.ToString();
         scoreboard.text = score.ToString();
         ballTransform = ball.GetComponent<Transform>();
+        scoringText.rectTransform.anchoredPosition = new Vector3(1400, 0, 0);
     }
 }
