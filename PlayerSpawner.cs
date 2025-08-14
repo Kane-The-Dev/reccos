@@ -7,15 +7,11 @@ public class PlayerSpawner : MonoBehaviour
 {
     public Transform[] spawnPoints, seats;
 
-    [SerializeField]
-    GameObject[] playerPrefabs;
-    [SerializeField]
-    GameObject ballPrefab, viewerPrefab;
-    [SerializeField]
-    Transform ballSpawnPoint, stadium;
+    [SerializeField] GameObject[] playerPrefabs;
+    [SerializeField] GameObject ballPrefab, viewerPrefab;
+    [SerializeField] Transform ballSpawnPoint, stadium;
 
     GameManager gm;
-    
     bool playerSpawned;
 
     void Start()

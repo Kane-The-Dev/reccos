@@ -223,8 +223,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     void Update()
     {
         if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount > 0)
-        playButton.SetActive(true);
+            playButton.SetActive(true);
         else
-        playButton.SetActive(false);
+            playButton.SetActive(false);
     }
 }    

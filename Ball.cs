@@ -6,15 +6,16 @@ using Photon.Pun;
 public class Ball : MonoBehaviour
 {
     public static Ball instance;
-
     public Rigidbody rb;
     public PhotonView view;
     GameManager gm;
-    public TrailRenderer trail;
-    
-    public float hostPing = 0f;
-    public GameObject model, collidingEffect, ballHolder;
+
     public bool isDribbling;
+    public float hostPing = 0f;
+    
+    public GameObject model, collidingEffect, ballHolder;
+    public TrailRenderer trail;
+    [SerializeField] LayerMask obstacle;
 
     float counter = 0f;
     bool count = false;
@@ -23,8 +24,8 @@ public class Ball : MonoBehaviour
     void Awake()
     {
         if (instance == null)
-        instance = this;
-        else
+            instance = this;
+        else if(instance != null && instance != this)
         {
             if (gm.isSingleplayer)
                 Destroy(ballHolder);
@@ -53,16 +54,20 @@ public class Ball : MonoBehaviour
             count = false;
             counter = 0f;
         }
-
         preVel = rb.velocity;
 
         if (count)
-        counter += Time.deltaTime;
+            counter += Time.deltaTime;
     }
 
-    public IEnumerator ActivateKickBall(Vector3 kickDir, float delay)
+    public IEnumerator ActivateKickBall(Vector3 kickDir, float delay, Vector3 foot)
     {
-        //Debug.Log(kickDir.magnitude);
+        if (Physics.Linecast(transform.position, foot, out RaycastHit hit, obstacle))
+        {
+            Debug.Log("Blocked!");
+            yield break;
+        }    
+
         float volume = 0.25f + kickDir.magnitude / 20f;
         if (volume > 1f) volume = 1f;
         SoundManager.PlaySound(SoundType.KICK, volume);

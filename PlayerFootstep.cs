@@ -9,10 +9,8 @@ public class PlayerFootstep : MonoBehaviour
     PhotonView view;
     PlayerMovement pm;
 
-    [SerializeField]
-    GameObject runningEffect;
-    [SerializeField]
-    Transform leftFoot, rightFoot;
+    [SerializeField] GameObject runningEffect;
+    [SerializeField] Transform leftFoot, rightFoot;
 
     void Start()
     {

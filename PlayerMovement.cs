@@ -30,27 +30,23 @@ public class PlayerMovement : MonoBehaviour
     Transform ballTransform;
     Ball ball;
     ChargeBar chargeBar;
-    [Range(-1,1)]
-    public int dominantFoot;
+    [Range(-1,1)] public int dominantFoot;
 
     [Header("Jetpack")]
     public float jetpackForce;
     public bool usingJetpack = false;
     float myTime, nextEmission = 0.05f, timeBetweenEmission = 0.05f;
-    public Transform jetpackPoint1, jetpackPoint2;
-    public GameObject jetpack, fireEffect;
+    [SerializeField] ParticleSystem hover1, hover2;
+    public GameObject jetpack;
     public Animator jetpackAnimator;
 
     [Header("Wall Climbing")]
     public bool isClimbing;
     //float start = 0f, interval1 = 0.52f, interval2 = 0.69f, delay = 0.51f;
     public Vector3 targetPosition, targetRotation, nextPosition;
-    [SerializeField]
-    Transform head, target;
-    [SerializeField]
-    LayerMask obstacle;
-    [SerializeField]
-    GameObject point;
+    [SerializeField] Transform head, target;
+    [SerializeField] LayerMask obstacle;
+    [SerializeField] GameObject point;
 
     [Header("Dribbling")]
     public bool isDribbling;
@@ -66,10 +62,8 @@ public class PlayerMovement : MonoBehaviour
     [Header("Collide n' Slide")]
     int maxBounces = 3;
     Bounds bounds;
-    [SerializeField]
-    private CapsuleCollider cs;
-    [SerializeField]
-    private LayerMask whatIsWall;
+    [SerializeField] CapsuleCollider cs;
+    [SerializeField] LayerMask whatIsWall;
 
     [Header("Camera")]
     public float turnSmoothTime = 1f;
@@ -80,8 +74,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Particle Effects")]
     public ParticleSystemForceField psff;
     public GameObject landingEffect1, landingEffect2;
-    [SerializeField]
-    Transform effectSpawnPoint;
+    [SerializeField] Transform effectSpawnPoint;
     public float inAirTime = 0.5f;
 
     [Header("Animation")]
@@ -313,7 +306,7 @@ public class PlayerMovement : MonoBehaviour
                     jumpsLeft--;
 
                     if (isDribbling)
-                        StartCoroutine(ball.ActivateKickBall(Vector3.up * 8f, 0.15f));
+                        StartCoroutine(ball.ActivateKickBall(Vector3.up * 8f, 0.15f, Vector3.zero));
 
                     if (jumpsLeft == 0 && doubleJumpAllowed)
                     {
@@ -355,7 +348,7 @@ public class PlayerMovement : MonoBehaviour
                 if (Physics.Raycast(head.position, transform.forward, out hit, obstacle))
                 {
                     point.transform.position = hit.point;
-                    Debug.Log(Vector3.Distance(transform.position, hit.point));
+                    //Debug.Log(Vector3.Distance(transform.position, hit.point));
                     
                     if (Vector3.Distance(transform.position, hit.point) >= 3f)
                     {
@@ -423,7 +416,6 @@ public class PlayerMovement : MonoBehaviour
                 sideIndicator = Input.GetAxisRaw("Kick");
                 startCharging = Time.time;
             }
-
             else if (Input.GetButton("Kick") && !gm.inSettings)
             {
                 if (sideIndicator != 0)
@@ -434,9 +426,9 @@ public class PlayerMovement : MonoBehaviour
                 else
                     chargeBar.value = 0f;
             }
-
             else if (Input.GetButtonUp("Kick") && !isClimbing && !gm.inSettings)
             {
+                Vector3 foot = Vector3.zero;
                 if (sideIndicator < 0f)
                 {
                     if (chargeBar.value >= 0.6f)
@@ -451,6 +443,7 @@ public class PlayerMovement : MonoBehaviour
                     }
                 
                     ballDistance = Vector3.Distance(ballTransform.position, left.position);
+                    foot = left.position;
                 }
                 else if (sideIndicator > 0f)
                 {
@@ -466,13 +459,14 @@ public class PlayerMovement : MonoBehaviour
                     }
 
                     ballDistance = Vector3.Distance(ballTransform.position, right.position);
+                    foot = right.position;
                 }
 
                 kickDirection = transform.forward.normalized;
                 kickDirection.y = 0.5f + chargeBar.value * 0.25f;
                 
                 float forceMultiplier;
-                if (sideIndicator == dominantFoot && sideIndicator!=0)
+                if (sideIndicator == dominantFoot && sideIndicator != 0)
                 {
                     kickDirection.x *= 1f + Random.Range(-0.05f,0.05f);
                     kickDirection.y *= 1f + Random.Range(-0.05f,0.05f);
@@ -499,11 +493,23 @@ public class PlayerMovement : MonoBehaviour
                     isDribbling = false;
                     Vector3 v = kickDirection * kickForce * (chargeBar.value * 2f + 1f) * forceMultiplier;
                     if (chargeBar.value >= 0.6f)
-                        StartCoroutine(ball.ActivateKickBall(v, 0.25f));
+                        StartCoroutine(ball.ActivateKickBall(v, 0.25f, foot));
                     else
-                        StartCoroutine(ball.ActivateKickBall(v, 0.15f));
+                        StartCoroutine(ball.ActivateKickBall(v, 0.15f, foot));
                 }
                 chargeBar.value = 0f;
+            }
+            
+            //jetpack
+            if (Input.GetButtonDown("Jump") && usingJetpack)
+            {
+                ActivateJetpack(true);
+                if (view.IsMine) view.RPC("ActivateJetpack", RpcTarget.Others, true);
+            }
+            else if (Input.GetButtonUp("Jump"))
+            {
+                ActivateJetpack(false);
+                if (view.IsMine) view.RPC("ActivateJetpack", RpcTarget.Others, false);
             }
 
             //power-up durations
@@ -514,6 +520,12 @@ public class PlayerMovement : MonoBehaviour
                 else
                     visual.ChangeSkin("blue");
                 isInvisible = false;
+            }
+
+            if (hover1.isPlaying && durations[5] < 0f)
+            {
+                ActivateJetpack(false);
+                if (view.IsMine) view.RPC("ActivateJetpack", RpcTarget.Others, false);
             }
 
             for (int i = 0; i < 10; i++)
@@ -624,32 +636,6 @@ public class PlayerMovement : MonoBehaviour
                     else
                     rb.velocity += new Vector3(0f, jetpackForce * (0.4f + (13f - Mathf.Sqrt(transform.position.y)) / 20f), 0f);
 
-                    if (gm.isSingleplayer)
-                    {
-                        Instantiate(
-                            fireEffect,
-                            jetpackPoint1.position,
-                            Quaternion.Euler(-90f,0f,0f)
-                        );
-                        Instantiate(
-                            fireEffect,
-                            jetpackPoint2.position,
-                            Quaternion.Euler(-90f,0f,0f)
-                        );
-                    }
-                    else if (!gm.isSingleplayer)
-                    {
-                        PhotonNetwork.Instantiate(
-                            fireEffect.name,
-                            jetpackPoint1.position,
-                            Quaternion.Euler(-90f,0f,0f)
-                        );
-                        PhotonNetwork.Instantiate(
-                            fireEffect.name,
-                            jetpackPoint2.position,
-                            Quaternion.Euler(-90f,0f,0f)
-                        );
-                    }
                     nextEmission = nextEmission - myTime;
                     myTime = 0f;
                 }
@@ -672,6 +658,23 @@ public class PlayerMovement : MonoBehaviour
                     Time.fixedDeltaTime * 5f
                 );
             }
+        }
+    }
+
+    [PunRPC]
+    void ActivateJetpack(bool on)
+    {
+        Debug.Log(on);
+        if (on && !hover1.isPlaying)
+        {  
+            hover1.Play();
+            hover2.Play();
+                        
+        }
+        else if (!on)
+        {
+            hover1.Stop();
+            hover2.Stop();
         }
     }
 
@@ -702,31 +705,6 @@ public class PlayerMovement : MonoBehaviour
 
         return velocity;
     }
-
-    /*IEnumerator RunningEffect()
-    {
-        yield return new WaitForSeconds(0.5f);
-    
-        while (animator.GetBool("isRunning") && isGrounded)
-        {
-            SoundManager.PlaySound(SoundType.RUN, 1);
-            if (gm.isSingleplayer)
-                Instantiate(runningEffect, leftFoot.position, Quaternion.Euler(-90f, transform.eulerAngles.y, 0f));
-            else if (view.IsMine)
-                PhotonNetwork.Instantiate(runningEffect.name, leftFoot.position, Quaternion.Euler(-90f, transform.eulerAngles.y, 0f));
-        
-            yield return new WaitForSeconds(0.47f);
-            if(!(animator.GetBool("isRunning") && isGrounded)) continue;
-
-            SoundManager.PlaySound(SoundType.RUN, 1);
-            if (gm.isSingleplayer)
-                Instantiate(runningEffect, rightFoot.position, Quaternion.Euler(-90f, transform.eulerAngles.y, 0f));
-            else if (view.IsMine)
-                PhotonNetwork.Instantiate(runningEffect.name, rightFoot.position, Quaternion.Euler(-90f, transform.eulerAngles.y, 0f));
-            
-            yield return new WaitForSeconds(0.47f);
-        }
-    }*/
 
     IEnumerator DebuggingTool()
     {

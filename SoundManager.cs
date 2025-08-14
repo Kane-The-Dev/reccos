@@ -20,8 +20,7 @@ public enum SoundType{
 
 public class SoundManager : MonoBehaviour
 {
-    [SerializeField]
-    SoundList[] soundList;
+    [SerializeField] SoundList[] soundList;
     private static SoundManager instance;
     AudioSource source;
 
