@@ -6,7 +6,7 @@ using TMPro;
 
 public class RoomItem : MonoBehaviour
 {
-    public TextMeshProUGUI roomName;
+    public TextMeshProUGUI roomName, playerCount;
     LobbyManager manager;
 
     void Start()
@@ -14,9 +14,10 @@ public class RoomItem : MonoBehaviour
         manager = FindObjectOfType<LobbyManager>();
     }
 
-    public void SetRoomName(string name)
+    public void SetRoomName(string name, int count)
     {
         roomName.text = name;
+        playerCount.text = count + "/6";
     }
 
     public void OnClickRoomItem()

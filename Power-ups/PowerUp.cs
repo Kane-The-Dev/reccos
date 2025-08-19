@@ -149,14 +149,14 @@ public class PowerUp : MonoBehaviour
             if (pm.durations[4] <= 0f)
             {
                 pm.speed -= pm.defaultSpeed * speedBuff;
-                pm.isInvisible = false;
-                pm.jetpack.SetActive(true);
-                pm.jetpackAnimator.SetBool("isClosed", true);
+                //pm.isInvisible = false;
+                //pm.jetpack.SetActive(true);
+                //pm.jetpackAnimator.SetBool("isClosed", true);
             }
             break;
         
             case 5: // aerial advantage
-            if (pm.durations[5] < 0f)
+            if (pm.durations[5] <= 0f)
             {
                 pm.usingJetpack = false;
                 pm.jetpackAnimator.SetBool("isClosed", true);
@@ -164,7 +164,7 @@ public class PowerUp : MonoBehaviour
             break;
 
             case 6: // expert feet
-            if (pm.durations[6] < 0f)
+            if (pm.durations[6] <= 0f)
             {
                 pm.dribbleCooldown = pm.defaultDribbleCooldown;
                 pm.dribbleRange = pm.defaultDribbleRange;

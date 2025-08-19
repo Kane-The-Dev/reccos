@@ -488,7 +488,7 @@ public class PlayerMovement : MonoBehaviour
                     forceMultiplier = 0.75f;
                 }
 
-                if (ballDistance < 3.5f && sideIndicator != 0)
+                if (ballDistance < 3f && sideIndicator != 0)
                 {
                     isDribbling = false;
                     Vector3 v = kickDirection * kickForce * (chargeBar.value * 2f + 1f) * forceMultiplier;
@@ -513,7 +513,7 @@ public class PlayerMovement : MonoBehaviour
             }
 
             //power-up durations
-            if (isInvisible && durations[4] < 0f)
+            if (isInvisible && durations[4] <= 0f)
             {
                 if (gm.myID % 2 == 0) // 0 red 1 blue
                     visual.ChangeSkin("red");
@@ -522,14 +522,14 @@ public class PlayerMovement : MonoBehaviour
                 isInvisible = false;
             }
 
-            if (hover1.isPlaying && durations[5] < 0f)
+            if (hover1.isPlaying && durations[5] <= 0f)
             {
                 ActivateJetpack(false);
                 if (view.IsMine) view.RPC("ActivateJetpack", RpcTarget.Others, false);
             }
 
             for (int i = 0; i < 10; i++)
-                if (durations[i] >= 0f)
+                if (durations[i] > 0f)
                     durations[i] -= Time.deltaTime;
         }
     }

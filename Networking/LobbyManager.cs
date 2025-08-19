@@ -39,6 +39,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.JoinLobby();
     }
 
+    public override void OnConnectedToMaster()
+    {
+        PhotonNetwork.JoinLobby();
+    }
+
     //lobby stuff
     public void OnClickCreate()
     {
@@ -61,14 +66,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom(roomInput.text,new RoomOptions(){MaxPlayers = 6, BroadcastPropsChangeToAll = true});
     }
 
-    public void OnClickStart()
-    {
-        PhotonNetwork.LoadLevel("Gameplay");
-    }
-
     public void OnClickQuit()
     {
-        if (!GameManager.instance.isSingleplayer)
+        if (!gm.isSingleplayer)
             PhotonNetwork.Disconnect();
             
         SceneManager.LoadScene("Menu");
@@ -106,16 +106,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         buttonText.text = "Create Room";
     }
 
-    //room stuff
-    public override void OnJoinedRoom()
-    {
-        joinedRoom = true;
-        lobbyPanel.SetActive(false);
-        roomPanel.SetActive(true);
-        roomName.text = "Room: " + PhotonNetwork.CurrentRoom.Name;
-        UpdatePlayerList();
-    }
-
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         if (Time.time >= timeForNextUpdate)
@@ -135,7 +125,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         foreach(RoomInfo room in list)
         {
             RoomItem newRoom = Instantiate(roomItemPrefab,contentObject);
-            newRoom.SetRoomName(room.Name);
+            newRoom.SetRoomName(room.Name, room.PlayerCount);
             roomItemList.Add(newRoom);
         }
     }
@@ -143,6 +133,21 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public void JoinRoom(string roomName)
     {
         PhotonNetwork.JoinRoom(roomName);
+    }
+
+    //room stuff
+    public override void OnJoinedRoom()
+    {
+        joinedRoom = true;
+        lobbyPanel.SetActive(false);
+        roomPanel.SetActive(true);
+        roomName.text = PhotonNetwork.CurrentRoom.Name;
+        UpdatePlayerList();
+    }
+
+    public void OnClickStart()
+    {
+        PhotonNetwork.LoadLevel("Gameplay");
     }
 
     public void OnClickLeave()
@@ -157,11 +162,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         roomPanel.SetActive(false);
         buttonText.text = "Create Room";
         roomInput.text = null;
-    }
-
-    public override void OnConnectedToMaster()
-    {
-        PhotonNetwork.JoinLobby();
     }
 
     void UpdatePlayerList()
