@@ -130,12 +130,12 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
+    //room stuff
     public void JoinRoom(string roomName)
     {
         PhotonNetwork.JoinRoom(roomName);
     }
 
-    //room stuff
     public override void OnJoinedRoom()
     {
         joinedRoom = true;

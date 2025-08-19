@@ -31,8 +31,8 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        Screen.SetResolution(1500, 900, false);
-
+        //PhotonNetwork.EnableCloseConnection = true;
+        Screen.SetResolution(1500, 900, false);        
         camSensitivity = 1f;
     }
 
