@@ -89,27 +89,18 @@ public class PlayerItem : MonoBehaviourPunCallbacks
         curSlot = lobby.slots[ID].gameObject.name;
     }
 
-    /*public void KickPlayer()
-    {
-        if (!PhotonNetwork.IsMasterClient) return;
-        if (thisPlayer.IsLocal) return;
-
-        PhotonNetwork.CloseConnection(thisPlayer);
-    }*/
-
-    // Called by Master to kick someone
+    //Only MasterClient can call
     public void KickPlayer()
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
-        object content = null; // no data needed, just the event
+        object content = null;
         RaiseEventOptions options = new RaiseEventOptions { TargetActors = new int[] { thisPlayer.ActorNumber } };
         SendOptions sendOptions = new SendOptions { Reliability = true };
 
         PhotonNetwork.RaiseEvent(KickEventCode, content, options, sendOptions);
     }
 
-    // Listen for kick events
     public override void OnEnable()
     {
         base.OnEnable();
@@ -127,6 +118,7 @@ public class PlayerItem : MonoBehaviourPunCallbacks
         if (photonEvent.Code == KickEventCode)
         {
             Debug.Log("You were kicked by the host.");
+            GameManager.instance.myID = 0;
             PhotonNetwork.LeaveRoom();
         }
     }

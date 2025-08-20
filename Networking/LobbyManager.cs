@@ -29,7 +29,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     bool[] occupied;
     bool joinedRoom = false;
 
-    public GameObject playButton;
+    public GameObject playButton, roomOptions;
 
     GameManager gm;
 
@@ -139,10 +139,15 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         joinedRoom = true;
+
         lobbyPanel.SetActive(false);
         roomPanel.SetActive(true);
         roomName.text = PhotonNetwork.CurrentRoom.Name;
+        if(!PhotonNetwork.IsMasterClient)
+            roomOptions.SetActive(false);
+
         UpdatePlayerList();
+        gm.ApplyRoomProperties(PhotonNetwork.CurrentRoom.CustomProperties);
     }
 
     public void OnClickStart()
@@ -152,6 +157,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public void OnClickLeave()
     {
+        gm.myID = 0;
         PhotonNetwork.LeaveRoom();
     }
 

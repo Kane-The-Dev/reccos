@@ -11,23 +11,24 @@ public class Goal : MonoBehaviour
     public int scoreToWin;
     public Text[] scoreDisplays;
     public TextMeshProUGUI scoreboard;
+
     GameObject ball;
     Transform ballTransform;
     public GameObject ballPrefab;
     public Transform ballSpawnPoint;
+
     public GameObject goalEffect;
     public GameObject winningText;
     public TextMeshProUGUI scoringText;
     Vector3 target = new Vector3(-1400,0,0);
-    Animator sAnim;
-    Animator wAnim;
+
     GameManager gm;
     
     void Start()
     {
-        //sAnim=scoringText.GetComponent<Animator>();
-        //wAnim=winningText.GetComponent<Animator>();
         gm = GameManager.instance;
+
+        scoreToWin = gm.scoreToWin;
     }
 
     void Update()
@@ -68,30 +69,22 @@ public class Goal : MonoBehaviour
             if (score < scoreToWin)
             {
                 Invoke("SpawnBall", 0.01f);
-                //sAnim.SetBool("slideIn",true);
-                //sAnim.SetBool("slideOut",false);
-                //Invoke("BallScored",5f);
             }
             else
             {
                 gm.gameEnded = true;
-                //wAnim.SetBool("slideIn",true);
-                //wAnim.SetBool("slideOut",false);
-                //Invoke("GameEnded",5f);
             } 
         }
     }
 
     void BallScored()
     {
-        sAnim.SetBool("slideOut", true);
-        sAnim.SetBool("slideIn", false);
+        
     }
     
     void GameEnded()
     {
-        wAnim.SetBool("slideOut", true);
-        wAnim.SetBool("slideIn", false);
+
     }
 
     void SpawnBall()

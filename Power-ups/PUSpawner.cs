@@ -12,12 +12,16 @@ public class PUSpawner : MonoBehaviour
     GameManager gm;
     RaycastHit hit;
     public LayerMask whatIsPlayer;
-    [Range(0.1f, 5f)]
-    public float spawnRate;
+    [Range(0.25f, 3f)]
+    public float spawnRate; //power-up per second
 
     void Start()
     {
         gm = GameManager.instance;
+        spawnRate = gm.PUSpawnRate;
+
+        for(int i = 0; i < available.Length; i++)
+        available[i] = gm.PUToggle[i];
 
         PUAllowed = false;
         foreach(bool a in available)
@@ -28,6 +32,8 @@ public class PUSpawner : MonoBehaviour
             }
         }
 
+        if(!PhotonNetwork.IsMasterClient) return;
+        
         Invoke("SpawnStartingPU",0.2f);
         StartCoroutine(SpawnPowerUp());
     }

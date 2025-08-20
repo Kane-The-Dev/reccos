@@ -99,6 +99,10 @@ public class PlayerMovement : MonoBehaviour
         pt = GetComponent<Transform>();
         pc = FindObjectOfType<PlayerCamera>();
 
+        defaultSpeed = gm.defaultSpeed;
+        defaultJumpForce = gm.defaultJumpForce;
+        defaultKickForce = gm.defaultKickForce;
+
         speed = defaultSpeed;
         jumpForce = defaultJumpForce;
         kickForce = defaultKickForce;
@@ -118,7 +122,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Initialize()
     {     
-        if (view.IsMine||gm.isSingleplayer)
+        if (view.IsMine || gm.isSingleplayer)
         {   
             if (gm.myID % 2 == 0) // 0 red 1 blue
                 visual.ChangeSkin("red");
