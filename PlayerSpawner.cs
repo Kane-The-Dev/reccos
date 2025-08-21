@@ -26,7 +26,6 @@ public class PlayerSpawner : MonoBehaviour
                 GameObject viewer = Instantiate(viewerPrefab,seat.position,Quaternion.identity);
                 viewer.transform.parent = stadium;
             }
-            
         }
         Invoke("SpawnPlayer",0.1f);
     }
@@ -42,8 +41,18 @@ public class PlayerSpawner : MonoBehaviour
         {
             //GameObject playerToSpawn = playerPrefabs[(int)PhotonNetwork.LocalPlayer.CustomProperties["playerAvatar"]];
             GameObject playerToSpawn = playerPrefabs[0];
-            PhotonNetwork.Instantiate(playerToSpawn.name, spawnPoints[gm.myID].position, Quaternion.identity);
-            PhotonNetwork.InstantiateRoomObject(ballPrefab.name, ballSpawnPoint.position, Quaternion.identity);
+            PhotonNetwork.Instantiate(
+                playerToSpawn.name, 
+                spawnPoints[gm.myID].position, 
+                Quaternion.identity
+            );
+
+            if (PhotonNetwork.IsMasterClient)
+                PhotonNetwork.InstantiateRoomObject(
+                    ballPrefab.name, 
+                    ballSpawnPoint.position, 
+                    Quaternion.identity
+                );
         }
     }
 

@@ -5,24 +5,31 @@ using Photon.Pun;
 
 public class FollowServerBall : MonoBehaviour
 {
-    [SerializeField]
-    Ball serverBall;
+    [SerializeField] Ball serverBall;
+    [SerializeField] GameObject model;
     Rigidbody rb;
     GameManager gm;
+    bool isFinding;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         gm = GameManager.instance;
+        isFinding = false;
     }
 
     void Update()
     {
-        if (!serverBall)
+        if (serverBall == null)
         {
-            StartCoroutine(TurnOff(0.5f));
             serverBall = FindObjectOfType<Ball>();
+            if(!isFinding)
+            {
+                StartCoroutine(TurnOff(0.5f));
+                isFinding = true;
+            } 
         }
+        else isFinding = false;
 
         if (!gm.isSingleplayer && !PhotonNetwork.IsMasterClient && serverBall)
         {
@@ -42,10 +49,10 @@ public class FollowServerBall : MonoBehaviour
 
     public IEnumerator TurnOff(float time)
     {
-        gameObject.SetActive(false);
+        model.SetActive(false);
         GetComponent<TrailRenderer>().enabled = false;
         yield return new WaitForSeconds(time);
-        gameObject.SetActive(true);
+        model.SetActive(true);
         GetComponent<TrailRenderer>().enabled = true;
     }
 }

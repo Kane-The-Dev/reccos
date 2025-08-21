@@ -261,8 +261,9 @@ public class PlayerMovement : MonoBehaviour
                 isDribbling = false;
             
 
-            if (isDribbling && ball)
+            if (isDribbling && ball != null)
             {
+                ballTransform = ball.gameObject.GetComponent<Transform>();
                 float ballDistance = Mathf.Min(
                     Vector3.Distance(ballTransform.position, left.position), 
                     Vector3.Distance(ballTransform.position, right.position)
@@ -599,15 +600,31 @@ public class PlayerMovement : MonoBehaviour
 
                 if (gm.isSingleplayer)
                 {
-                    GameObject effect = Instantiate(landingEffect1, effectSpawnPoint.position, Quaternion.Euler(-90f, 0f, 0f));
+                    GameObject effect = Instantiate(
+                        landingEffect1, 
+                        effectSpawnPoint.position, 
+                        Quaternion.Euler(-90f, 0f, 0f)
+                    );
                     effect.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                    Instantiate(landingEffect2, effectSpawnPoint.position, Quaternion.Euler(-90f, 0f, 0f));
+                    Instantiate(
+                        landingEffect2, 
+                        effectSpawnPoint.position, 
+                        Quaternion.Euler(-90f, 0f, 0f)
+                    );
                 }
                 else if (view.IsMine)
                 {
-                    GameObject effect = PhotonNetwork.Instantiate(landingEffect1.name, effectSpawnPoint.position, Quaternion.Euler(-90f, 0f, 0f));
+                    GameObject effect = PhotonNetwork.Instantiate(
+                        landingEffect1.name, 
+                        effectSpawnPoint.position, 
+                        Quaternion.Euler(-90f, 0f, 0f)
+                    );
                     effect.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                    PhotonNetwork.Instantiate(landingEffect2.name, effectSpawnPoint.position, Quaternion.Euler(-90f, 0f, 0f));
+                    PhotonNetwork.Instantiate(
+                        landingEffect2.name, 
+                        effectSpawnPoint.position, 
+                        Quaternion.Euler(-90f, 0f, 0f)
+                    );
                 }
             }
             inAirTime = 0f;
@@ -615,6 +632,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (collision.gameObject.CompareTag("Ball"))
         {
+            ball.view.RPC("UpdateLastTouch", RpcTarget.All, gm.nickname, gm.myID);
             isDribbling = true;
         }
     }
@@ -636,7 +654,11 @@ public class PlayerMovement : MonoBehaviour
                     //Debug.Log(rb.velocity.y);
                     
                     if (transform.position.y >= 13f)
-                    rb.velocity = Vector3.Lerp(rb.velocity, new Vector3(rb.velocity.x, jetpackForce, rb.velocity.z), 20f * Time.deltaTime);
+                    rb.velocity = Vector3.Lerp(
+                        rb.velocity, 
+                        new Vector3(rb.velocity.x, jetpackForce, rb.velocity.z), 
+                        20f * Time.deltaTime
+                    );
                     else
                     rb.velocity += new Vector3(0f, jetpackForce * (0.4f + (13f - Mathf.Sqrt(transform.position.y)) / 20f), 0f);
 
@@ -648,14 +670,16 @@ public class PlayerMovement : MonoBehaviour
             myTime += Time.fixedDeltaTime;
 
             Vector3 direction = new Vector3(movementX, 0f, movementZ).normalized;
-            if (usingJetpack && !isGrounded && direction.magnitude > 0.1f) {
+            if (usingJetpack && !isGrounded && direction.magnitude > 0.1f) 
+            {
                 model.transform.localRotation = Quaternion.Lerp(
                     model.transform.localRotation,
                     Quaternion.Euler(0f, 90f, 15f),
                     Time.fixedDeltaTime * 5f
                 );
             }
-            else {
+            else 
+            {
                 model.transform.localRotation = Quaternion.Lerp(
                     model.transform.localRotation,
                     Quaternion.Euler(0f, 90f, 0f),

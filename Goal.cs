@@ -7,17 +7,20 @@ using TMPro;
 
 public class Goal : MonoBehaviour
 {
+    [SerializeField] int goalID; // 0 red 1 blue
+
     int score;
     public int scoreToWin;
     public Text[] scoreDisplays;
     public TextMeshProUGUI scoreboard;
 
-    GameObject ball;
+    Ball ball;
     Transform ballTransform;
     public GameObject ballPrefab;
     public Transform ballSpawnPoint;
 
     public GameObject goalEffect;
+    string annoucement;
     public GameObject winningText;
     public TextMeshProUGUI scoringText;
     Vector3 target = new Vector3(-1400,0,0);
@@ -27,21 +30,28 @@ public class Goal : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
-
         scoreToWin = gm.scoreToWin;
     }
 
     void Update()
     {
         if (ball == null)
-        ball = GameObject.FindWithTag("Ball");
+        ball = Ball.instance;
 
-        if(scoringText.rectTransform.position != target)
+        if (scoringText.rectTransform.position != target)
             scoringText.rectTransform.anchoredPosition = Vector3.MoveTowards(
                 scoringText.rectTransform.anchoredPosition,
                 target,
-                300f * Time.deltaTime
+                600f * Time.deltaTime
             );
+    }
+
+    public void UpdateScoringText(string lastTouch, int lastTouchID)
+    {
+        if (lastTouchID % 2 != goalID)
+            annoucement = lastTouch + " has scored a goal!";
+        else
+            annoucement = lastTouch + " scored an own goal...";
     }
 
     private void OnTriggerEnter(Collider collision)
@@ -91,7 +101,7 @@ public class Goal : MonoBehaviour
     {
         if (gm.isSingleplayer)
             Instantiate(ballPrefab, ballSpawnPoint);
-        else
+        else if (PhotonNetwork.IsMasterClient)
             PhotonNetwork.InstantiateRoomObject(ballPrefab.name, ballSpawnPoint.position, Quaternion.identity);
     }
 
@@ -103,7 +113,8 @@ public class Goal : MonoBehaviour
         foreach(Text text in scoreDisplays)
         text.text = score.ToString();
         scoreboard.text = score.ToString();
-        ballTransform = ball.GetComponent<Transform>();
+        if (ball) ballTransform = ball.gameObject.GetComponent<Transform>();
+        scoringText.text = annoucement;
         scoringText.rectTransform.anchoredPosition = new Vector3(1400, 0, 0);
     }
 }

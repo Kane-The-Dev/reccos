@@ -12,7 +12,7 @@ public class PUSpawner : MonoBehaviour
     GameManager gm;
     RaycastHit hit;
     public LayerMask whatIsPlayer;
-    [Range(0.25f, 3f)]
+    [Range(0f, 3f)]
     public float spawnRate; //power-up per second
 
     void Start()
@@ -70,7 +70,7 @@ public class PUSpawner : MonoBehaviour
 
     private void SpawnStartingPU()
     {
-        if (!PUAllowed) return;
+        if (!PUAllowed || spawnRate <= 0f) return;
 
         int n = Random.Range(6, 9);
         for(int i = 0; i < n; i++)
@@ -82,9 +82,17 @@ public class PUSpawner : MonoBehaviour
             Vector3 randomPosition = RandomPosition();
 
             if (gm.isSingleplayer)
-                Instantiate(powerUps[random], randomPosition, Quaternion.Euler(0f, Random.Range(0,360), 0f));
+                Instantiate(
+                    powerUps[random], 
+                    randomPosition, 
+                    Quaternion.Euler(0f, Random.Range(0,360), 0f)
+                );
             else if (PhotonNetwork.IsMasterClient)
-                PhotonNetwork.InstantiateRoomObject(powerUps[random].name, randomPosition, Quaternion.Euler(0f, Random.Range(0,360), 0f));
+                PhotonNetwork.InstantiateRoomObject(
+                    powerUps[random].name, 
+                    randomPosition, 
+                    Quaternion.Euler(0f, Random.Range(0,360), 0f)
+                );
         }
     }
     
@@ -93,8 +101,8 @@ public class PUSpawner : MonoBehaviour
         while(true)
         {
             yield return new WaitForSeconds(1f / spawnRate);
-            
-            if (!PUAllowed) continue;
+
+            if (!PUAllowed || spawnRate <= 0f) yield break;
             
             int random = Random.Range(0, powerUps.Length);
             while(!available[random])
@@ -103,9 +111,17 @@ public class PUSpawner : MonoBehaviour
             Vector3 randomPosition = RandomPosition();
 
             if (gm.isSingleplayer)
-                Instantiate(powerUps[random], randomPosition, Quaternion.Euler(0f, Random.Range(0, 360), 0f));
+                Instantiate(
+                    powerUps[random], 
+                    randomPosition, 
+                    Quaternion.Euler(0f, Random.Range(0, 360), 0f)
+                );
             else if (PhotonNetwork.IsMasterClient)
-                PhotonNetwork.InstantiateRoomObject(powerUps[random].name, randomPosition, Quaternion.Euler(0f, Random.Range(0, 360), 0f));
+                PhotonNetwork.InstantiateRoomObject(
+                    powerUps[random].name, 
+                    randomPosition, 
+                    Quaternion.Euler(0f, Random.Range(0, 360), 0f)
+                );
         }
     }
 }

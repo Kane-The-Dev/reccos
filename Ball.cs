@@ -21,8 +21,13 @@ public class Ball : MonoBehaviour
     bool count = false;
     Vector3 preVel;
 
+    //public string lastTouch;
+    //public int lastTouchID;
+
     void Awake()
     {
+        gm = GameManager.instance;
+
         if (instance == null)
             instance = this;
         else if(instance != null && instance != this)
@@ -38,7 +43,6 @@ public class Ball : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         view = GetComponent<PhotonView>();
-        gm = GameManager.instance;
 
         isDribbling = false;
     }
@@ -93,6 +97,7 @@ public class Ball : MonoBehaviour
             yield return new WaitForSeconds(newDelay);
             isDribbling = false;
             view.RPC("KickBall", RpcTarget.MasterClient, kickDir, false);
+            view.RPC("UpdateLastTouch", RpcTarget.All, gm.nickname, gm.myID);
         }
     }
 
@@ -137,6 +142,13 @@ public class Ball : MonoBehaviour
     void UpdateHostPing(float value)
     {
         hostPing = value;
+    }
+
+    [PunRPC]
+    void UpdateLastTouch(string name, int ID)
+    {
+        Goal[] goals = FindObjectsOfType<Goal>();
+        foreach (Goal goal in goals) goal.UpdateScoringText(name, ID);
     }
     
     IEnumerator GetBallVelocity()
