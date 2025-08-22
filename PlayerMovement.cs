@@ -132,7 +132,8 @@ public class PlayerMovement : MonoBehaviour
             dribblePoint.gameObject.SetActive(true);
             dribbleHitbox.gameObject.SetActive(true);
 
-            view.RPC("SetNameTag", RpcTarget.All, gm.nickname);
+            if (!gm.isSingleplayer)
+                view.RPC("SetNameTag", RpcTarget.All, gm.nickname);
 
             pc.FollowPlayer(pt);
         }
@@ -203,10 +204,8 @@ public class PlayerMovement : MonoBehaviour
                     transform.rotation = Quaternion.Euler(transform.eulerAngles.x, angle, transform.eulerAngles.z);
                     rb.velocity = new Vector3(finalMoveDirection.x * speed, rb.velocity.y, finalMoveDirection.z * speed);
                 }
-                else if (isClimbing) // climbing
+                else if (isClimbing) //climbing
                 {
-                    //if (start <= 0f)
-                    //start = Time.time;
                     animator.SetInteger("climbDirection", 0);
 
                     if (movementZ > 0) animator.SetInteger("climbDirection", 1);
@@ -214,28 +213,6 @@ public class PlayerMovement : MonoBehaviour
 
                     if (movementX > 0) animator.SetInteger("climbDirection", 2);
                     else if (movementX < 0) animator.SetInteger("climbDirection", 4);
-
-                    /*
-                    float elapsed = Time.time - start;
-                    Vector2 gap = Vector2.zero;
-                    
-                    if (Mathf.Floor((elapsed - delay) / interval2) != Mathf.Floor(((elapsed - delay) - Time.deltaTime) / interval2))
-                        gap += new Vector2(2f * movementX, 0f);
-                    
-                    if (movementX != 0f && movementZ != 0f)
-                    {
-                        if (Mathf.Floor((elapsed - delay) / interval2) != Mathf.Floor(((elapsed - delay) - Time.deltaTime) / interval2))
-                        gap += new Vector2(0f, 1.25f * movementZ);
-                    }
-                    else
-                    {
-                        if (Mathf.Floor(elapsed / interval1) != Mathf.Floor((elapsed - Time.deltaTime) / interval1))
-                        gap += new Vector2(0f, 1.25f * movementZ);
-                    }
-
-                    if (gap != Vector2.zero)
-                        nextPosition = transform.position + transform.TransformDirection(gap) * 1f;
-                    */
 
                     if (nextPosition != Vector3.zero)
                         transform.position = Vector3.Lerp(transform.position, nextPosition, 4f * Time.deltaTime);
@@ -247,7 +224,6 @@ public class PlayerMovement : MonoBehaviour
 
                 if (isClimbing)
                 {
-                    //start = 0f;
                     animator.SetBool("isClimbing", true);
                     animator.SetInteger("climbDirection", 0);
                 }
@@ -257,9 +233,8 @@ public class PlayerMovement : MonoBehaviour
             }
             
             //dribbling
-            if (rb.velocity.magnitude < 0f || !isGrounded)
+            if (!isGrounded) //rb.velocity.magnitude <= 0f || 
                 isDribbling = false;
-            
 
             if (isDribbling && ball != null)
             {
@@ -284,11 +259,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 float distance = Vector3.Distance(ballTransform.position, dribblePoint.position);
                 Vector3 dribbleDirection = (dribblePoint.position - ballTransform.position).normalized * Mathf.Sqrt(distance) * 3f;
-
-                if (gm.isSingleplayer)
-                    ball.rb.AddForce(dribbleDirection,ForceMode.Impulse);
-                else
-                    ball.view.RPC("KickBall",RpcTarget.MasterClient,dribbleDirection, true);
+                StartCoroutine(ball.ActivateKickBall(dribbleDirection, 0f, dribbleHitbox.position, true));
 
                 dribblingTimer = dribbleCooldown;
             }
@@ -311,7 +282,7 @@ public class PlayerMovement : MonoBehaviour
                     jumpsLeft--;
 
                     if (isDribbling)
-                        StartCoroutine(ball.ActivateKickBall(Vector3.up * 8f, 0.15f, Vector3.zero));
+                        StartCoroutine(ball.ActivateKickBall(Vector3.up * kickForce * 2f, 0.1f, dribbleHitbox.position, false));
 
                     if (jumpsLeft == 0 && doubleJumpAllowed)
                     {
@@ -335,7 +306,6 @@ public class PlayerMovement : MonoBehaviour
             {
                 rb.velocity = new Vector3(rb.velocity.x, jetpackForce, rb.velocity.z);
                 movingAllowed = true;
-                //Debug.Log("rb.velocity.y");
             }
 
             //climbing
@@ -498,15 +468,15 @@ public class PlayerMovement : MonoBehaviour
                     isDribbling = false;
                     Vector3 v = kickDirection * kickForce * (chargeBar.value * 2f + 1f) * forceMultiplier;
                     if (chargeBar.value >= 0.6f)
-                        StartCoroutine(ball.ActivateKickBall(v, 0.25f, foot));
+                        StartCoroutine(ball.ActivateKickBall(v, 0.25f, foot, false));
                     else
-                        StartCoroutine(ball.ActivateKickBall(v, 0.15f, foot));
+                        StartCoroutine(ball.ActivateKickBall(v, 0.15f, foot, false));
                 }
                 chargeBar.value = 0f;
             }
             
             //jetpack
-            if (Input.GetButtonDown("Jump") && usingJetpack)
+            if (Input.GetButtonDown("Jump") && usingJetpack && !isInvisible)
             {
                 ActivateJetpack(true);
                 if (view.IsMine) view.RPC("ActivateJetpack", RpcTarget.Others, true);
@@ -525,6 +495,8 @@ public class PlayerMovement : MonoBehaviour
                 else
                     visual.ChangeSkin("blue");
                 isInvisible = false;
+                
+                jetpackAnimator.SetBool("isClosed", !usingJetpack);
             }
 
             if (hover1.isPlaying && durations[5] <= 0f)
@@ -632,7 +604,8 @@ public class PlayerMovement : MonoBehaviour
 
         if (collision.gameObject.CompareTag("Ball"))
         {
-            ball.view.RPC("UpdateLastTouch", RpcTarget.All, gm.nickname, gm.myID);
+            if(!gm.isSingleplayer)
+                ball.view.RPC("UpdateLastTouch", RpcTarget.All, gm.nickname, gm.myID);
             isDribbling = true;
         }
     }

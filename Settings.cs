@@ -75,13 +75,13 @@ public class Settings : MonoBehaviourPunCallbacks
     public void ChangeDefaultKickForce(float value)
     {
         gm.defaultKickForce = value * 0.2f;
-        display[4].text = (value * 0.2f).ToString("F1");
+        display[4].text = (value * 0.2f).ToString("0.#");
     }
 
     public void ChangePUSpawnRate(float value)
     {
         gm.PUSpawnRate = value * 0.25f;
-        display[5].text = (value * 0.25f).ToString("F2");
+        display[5].text = (value * 0.25f).ToString("0.##");
     }
 
     public void UpdatePUList(bool enabled)

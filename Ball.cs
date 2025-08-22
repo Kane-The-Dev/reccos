@@ -64,22 +64,15 @@ public class Ball : MonoBehaviour
             counter += Time.deltaTime;
     }
 
-    public IEnumerator ActivateKickBall(Vector3 kickDir, float delay, Vector3 foot)
+    public IEnumerator ActivateKickBall(Vector3 kickDir, float delay, Vector3 foot, bool dribble)
     {
-        if (Physics.Linecast(transform.position, foot, out RaycastHit hit, obstacle))
-        {
-            Debug.Log("Blocked!");
-            yield break;
-        }    
-
         float volume = 0.25f + kickDir.magnitude / 20f;
         if (volume > 1f) volume = 1f;
         SoundManager.PlaySound(SoundType.KICK, volume);
 
         if (gm.isSingleplayer) {
             yield return new WaitForSeconds(delay);
-            isDribbling = false;
-            rb.AddForce(kickDir, ForceMode.Impulse);
+            KickBall(kickDir, dribble, foot);
         }
         else {
             if (delay > 0f)
@@ -96,8 +89,16 @@ public class Ball : MonoBehaviour
             // Debug.Log(newDelay);
             yield return new WaitForSeconds(newDelay);
             isDribbling = false;
-            view.RPC("KickBall", RpcTarget.MasterClient, kickDir, false);
+            view.RPC("KickBall", RpcTarget.MasterClient, kickDir, dribble, foot);
             view.RPC("UpdateLastTouch", RpcTarget.All, gm.nickname, gm.myID);
+        }
+    }
+
+    void OnTriggerEnter(Collider collider)
+    {
+        if (collider.gameObject.CompareTag("Dribble"))
+        {
+            collider.gameObject.transform.parent.GetComponent<PlayerMovement>().isDribbling = true;
         }
     }
 
@@ -124,8 +125,15 @@ public class Ball : MonoBehaviour
     }
 
     [PunRPC]
-    void KickBall(Vector3 kickDir, bool dribble)
+    void KickBall(Vector3 kickDir, bool dribble, Vector3 foot)
     {
+        if (Physics.Linecast(transform.position, foot, out RaycastHit hit, obstacle))
+        {
+            Debug.Log("Blocked!");
+            return;
+        }
+        Debug.Log("Success!");
+
         isDribbling = dribble;
         if (gm.isSingleplayer || PhotonNetwork.IsMasterClient)
             rb.AddForce(kickDir, ForceMode.Impulse);
