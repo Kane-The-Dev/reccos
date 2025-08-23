@@ -20,6 +20,11 @@ public class FollowServerBall : MonoBehaviour
 
     void Update()
     {
+        if(transform.position.y < -10f)
+        {
+            StartCoroutine(TurnOff(0.5f));
+        }
+
         if (serverBall == null)
         {
             serverBall = FindObjectOfType<Ball>();

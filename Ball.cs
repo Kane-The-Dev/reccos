@@ -49,6 +49,14 @@ public class Ball : MonoBehaviour
 
     void Update()
     {
+        if(transform.position.y < -10f)
+        {
+            trail.enabled = false;
+            transform.localPosition = Vector3.zero;
+            rb.velocity = Vector3.zero;
+            trail.enabled = true;
+        }
+
         if (PhotonNetwork.IsMasterClient)
             view.RPC("UpdateHostPing", RpcTarget.All, gm.ping * 1f);
 

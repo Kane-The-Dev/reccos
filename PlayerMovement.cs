@@ -327,6 +327,7 @@ public class PlayerMovement : MonoBehaviour
                     
                     if (Vector3.Distance(transform.position, hit.point) >= 3f)
                     {
+                        animator.SetBool("isClimbing", false);
                         rb.useGravity = true;
                         isClimbing = false;
                         isGrounded = false;
@@ -338,6 +339,7 @@ public class PlayerMovement : MonoBehaviour
                 }
                 else
                 {
+                    animator.SetBool("isClimbing", false);
                     rb.useGravity = true;
                     isClimbing = false;
                     isGrounded = false;
@@ -349,13 +351,14 @@ public class PlayerMovement : MonoBehaviour
 
                 if (Input.GetAxisRaw("Vertical") < 0f)
                 {
+                    animator.SetBool("isClimbing", false);
                     rb.useGravity = true;
                     isClimbing = false;
                     isGrounded = false;
                     targetPosition = Vector3.zero;
                     nextPosition = Vector3.zero;
                     animator.SetTrigger("jump");
-                    rb.velocity = (transform.up - transform.forward).normalized * jumpForce;
+                    rb.velocity = (transform.up * 1.5f - transform.forward).normalized * jumpForce;
                 }
             }
             else
@@ -367,7 +370,11 @@ public class PlayerMovement : MonoBehaviour
                 {
                     animator.SetBool("isRunning", false);
                     animator.SetBool("isClimbing", true);
-                    //Debug.Log(Vector3.Distance(transform.position, targetPosition));
+
+                    if(movingAllowed)
+                    {
+                        Invoke("InterruptClimbing", 0.5f);
+                    }
 
                     if (Vector3.Distance(transform.position, targetPosition) >= 0.01f || Vector3.Dot(transform.forward.normalized, targetRotation.normalized) >= 0.999f)
                     {
@@ -375,6 +382,7 @@ public class PlayerMovement : MonoBehaviour
                         transform.forward = Vector3.Lerp(transform.forward, targetRotation, 90f * Time.deltaTime);
                         movingAllowed = false;
                     }
+
                     if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
                     {
                         targetPosition = Vector3.zero;
@@ -509,6 +517,14 @@ public class PlayerMovement : MonoBehaviour
                 if (durations[i] > 0f)
                     durations[i] -= Time.deltaTime;
         }
+    }
+
+    void InterruptClimbing()
+    {
+        targetPosition = Vector3.zero;
+        isClimbing = true;
+        isDribbling = false;
+        movingAllowed = true;
     }
 
     public void SpawnSmoke()

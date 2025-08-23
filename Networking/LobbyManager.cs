@@ -124,6 +124,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
         foreach(RoomInfo room in list)
         {
+            if (!room.IsOpen || !room.IsVisible || room.RemovedFromList)
+                continue;
+
             RoomItem newRoom = Instantiate(roomItemPrefab,contentObject);
             newRoom.SetRoomName(room.Name, room.PlayerCount);
             roomItemList.Add(newRoom);
@@ -152,6 +155,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public void OnClickStart()
     {
+        PhotonNetwork.CurrentRoom.IsVisible = false;
+        PhotonNetwork.CurrentRoom.IsOpen = false;
         PhotonNetwork.LoadLevel("Gameplay");
     }
 
