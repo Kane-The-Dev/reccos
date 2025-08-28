@@ -9,7 +9,7 @@ using TMPro;
 public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager instance;
-    public bool isSingleplayer, gameEnded, inSettings = false;
+    public bool isSingleplayer, shakeEnabled, gameEnded, inSettings = false;
     public float camSensitivity, gameLength, defaultSpeed, defaultJumpForce, defaultKickForce, PUSpawnRate, timeLeft;
     public int scoreToWin, dominantFoot, myID;
     public bool[] PUToggle;

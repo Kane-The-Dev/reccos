@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using Photon.Pun;
@@ -10,10 +11,37 @@ public class Settings : MonoBehaviourPunCallbacks
 {
     GameManager gm;
     [SerializeField] TextMeshProUGUI[] display;
+    [Header("Audio")]
+    [SerializeField] Slider musicSlider;
+    [SerializeField] Slider SFXSlider;
+    [Header("Graphic")]
+    [SerializeField] Slider brightSlider;
+    [SerializeField] Toggle postProToggle;
+    [SerializeField] Toggle shakeToggle;
+    [Header("Control")]
+    [SerializeField] Slider camSenSlider;
 
     void Start()
     {
         gm = GameManager.instance;
+
+        if (musicSlider != null) musicSlider.value = PlayerPrefs.GetFloat("MusicVolume", 1f);
+        if (SFXSlider != null) SFXSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
+        
+        if (brightSlider != null) brightSlider.value = PlayerPrefs.GetFloat("Brightness", 1f);
+        if (postProToggle != null) postProToggle.isOn = PlayerPrefs.GetInt("PostProcessing", 1) == 1;
+        if (shakeToggle != null) shakeToggle.isOn = PlayerPrefs.GetInt("Screenshake", 1) == 1;
+
+        if (camSenSlider != null) camSenSlider.value = PlayerPrefs.GetFloat("CameraSensitivity", 1f);
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            PlayerPrefs.DeleteAll();
+            PlayerPrefs.Save();
+        }
     }
 
     public void OnClickQuit()
@@ -25,19 +53,54 @@ public class Settings : MonoBehaviourPunCallbacks
 
     public void CloseSettings()
     {
+        if(SceneManager.GetActiveScene().name == "Gameplay")
         Cursor.lockState = CursorLockMode.Locked;
-        gameObject.SetActive(false);
         gm.inSettings = false;
+        gameObject.SetActive(false);
     }
 
-    public void UpdateRoomProps()
+    public void ChangeMusicVolume(float value)
     {
-        gm.SetRoomProperties();
+        PlayerPrefs.SetFloat("MusicVolume", value);
+        PlayerPrefs.Save();
+    }
+
+    public void ChangeSFXVolume(float value)
+    {
+        PlayerPrefs.SetFloat("SFXVolume", value);
+        PlayerPrefs.Save();
     }
 
     public void ChangeCameraSensitivity(float value)
     {
         gm.camSensitivity = value;
+        PlayerPrefs.SetFloat("CameraSensitivity", value);
+        PlayerPrefs.Save();
+    }
+
+    public void ChangeBrightness(float value)
+    {
+        PlayerPrefs.SetFloat("Brightness", value);
+        PlayerPrefs.Save();
+    }
+
+    public void ChangePostProcessing(bool value)
+    {
+        PlayerPrefs.SetInt("PostProcessing", value ? 1 : 0);
+        PlayerPrefs.Save();
+    }
+
+    public void ChangeScreenshake(bool value)
+    {
+        gm.shakeEnabled = value;
+        PlayerPrefs.SetInt("Screenshake", value ? 1 : 0);
+        PlayerPrefs.Save();
+    }
+
+    //room customization
+    public void UpdateRoomProps()
+    {
+        gm.SetRoomProperties();
     }
 
     public void ChangeGameLength(float value)

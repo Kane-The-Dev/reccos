@@ -50,7 +50,8 @@ public class PlayerCamera : MonoBehaviour
     //screenshake
     public void Shake(float intensity, float duration)
     {
-        StartCoroutine(ScreenShake(intensity, duration));
+        if(gm.shakeEnabled)
+            StartCoroutine(ScreenShake(intensity, duration));
     }
 
     IEnumerator ScreenShake(float shakeIntensity, float shakeDuration)
