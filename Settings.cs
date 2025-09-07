@@ -48,6 +48,7 @@ public class Settings : MonoBehaviourPunCallbacks
     {
         if (!gm.isSingleplayer)
         PhotonNetwork.Disconnect();
+        gm.inSettings = false;
         SceneManager.LoadScene("Menu");
     }
 
@@ -143,8 +144,8 @@ public class Settings : MonoBehaviourPunCallbacks
 
     public void ChangePUSpawnRate(float value)
     {
-        gm.PUSpawnRate = value * 0.25f;
-        display[5].text = (value * 0.25f).ToString("0.##");
+        gm.PUSpawnRate = value * 0.1f;
+        display[5].text = (value * 0.1f).ToString("0.#");
     }
 
     public void UpdatePUList(bool enabled)

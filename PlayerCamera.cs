@@ -31,7 +31,7 @@ public class PlayerCamera : MonoBehaviour
         sensitivity = 0;
 
         cfl.m_XAxis.m_MaxSpeed = 1000f * sensitivity;
-        cfl.m_YAxis.m_MaxSpeed = 8f * sensitivity;
+        cfl.m_YAxis.m_MaxSpeed = 6f * sensitivity;
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {

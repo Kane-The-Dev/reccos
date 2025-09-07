@@ -76,10 +76,11 @@ public class Ball : MonoBehaviour
     {
         float volume = 0.25f + kickDir.magnitude / 20f;
         if (volume > 1f) volume = 1f;
-        SoundManager.PlaySound(SoundType.KICK, volume);
+        if (dribble) volume = 0f;
 
         if (gm.isSingleplayer) {
             yield return new WaitForSeconds(delay);
+            SoundManager.PlaySound(SoundType.KICK, volume);
             KickBall(kickDir, dribble, foot);
         }
         else {
@@ -87,8 +88,8 @@ public class Ball : MonoBehaviour
                 count = true; // debugging
 
             float newDelay = delay;
-            if (!PhotonNetwork.IsMasterClient) {
-
+            if (!PhotonNetwork.IsMasterClient) 
+            {
                 newDelay = delay - (gm.ping + hostPing) / 1000f;
                 if (newDelay < 0f)
                     newDelay = 0f;
@@ -98,7 +99,7 @@ public class Ball : MonoBehaviour
             yield return new WaitForSeconds(newDelay);
             isDribbling = false;
             view.RPC("KickBall", RpcTarget.MasterClient, kickDir, dribble, foot);
-            view.RPC("UpdateLastTouch", RpcTarget.All, gm.nickname, gm.myID);
+            view.RPC("UpdateLastTouch", RpcTarget.All, gm.nickname, gm.myID, volume);
         }
     }
 
@@ -161,10 +162,12 @@ public class Ball : MonoBehaviour
     }
 
     [PunRPC]
-    void UpdateLastTouch(string name, int ID)
+    void UpdateLastTouch(string name, int ID, float volume)
     {
         Goal[] goals = FindObjectsOfType<Goal>();
         foreach (Goal goal in goals) goal.UpdateScoringText(name, ID);
+
+        SoundManager.PlaySound(SoundType.KICK, volume);
     }
     
     IEnumerator GetBallVelocity()

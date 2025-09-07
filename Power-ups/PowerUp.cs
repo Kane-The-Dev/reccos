@@ -20,9 +20,9 @@ public class PowerUp : MonoBehaviour
         view = GetComponent<PhotonView>();
         gm = GameManager.instance;
         powerUpHolder = GameObject.FindWithTag("PUH").GetComponent<Transform>();
-
+        
         if (gm.isSingleplayer)
-            Instantiate(collectEffect, transform);
+            Instantiate(collectEffect, transform.position, transform.rotation);
         else if (PhotonNetwork.IsMasterClient)
             view.RPC("SpawnEffectMultiplayer", RpcTarget.All);
     }
@@ -30,7 +30,7 @@ public class PowerUp : MonoBehaviour
     [PunRPC]
     void SpawnEffectMultiplayer()
     {
-        Instantiate(collectEffect, transform);
+        Instantiate(collectEffect, transform.position, transform.rotation);
     }
 
     void Update()
@@ -107,7 +107,8 @@ public class PowerUp : MonoBehaviour
         }
         
         GameObject puv = Instantiate(PUVisual, powerUpHolder);
-        puv.GetComponent<PUVisual>().duration = duration;
+        if(puv.GetComponent<PUVisual>() != null)
+            puv.GetComponent<PUVisual>().duration = duration;
     }
 
     void Disappear()

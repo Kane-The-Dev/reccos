@@ -18,12 +18,17 @@ public class ConnectToServer : MonoBehaviourPunCallbacks
     [SerializeField]
     Sprite[] frames;
     
-
     void Awake()
     {
         gm = GameManager.instance;
         if (SceneManager.GetActiveScene().name != "Gameplay")
         Cursor.lockState = CursorLockMode.None;
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.P))
+        OnClickSingleplayer();
     }
 
     public void OnClickConnect()

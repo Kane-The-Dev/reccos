@@ -621,9 +621,11 @@ public class PlayerMovement : MonoBehaviour
         if (collision.gameObject.CompareTag("Ball"))
         {
             if(!gm.isSingleplayer)
-                ball.view.RPC("UpdateLastTouch", RpcTarget.All, gm.nickname, gm.myID);
+                ball.view.RPC("UpdateLastTouch", RpcTarget.All, gm.nickname, gm.myID, 0f);
             isDribbling = true;
         }
+
+        if (collision.gameObject.CompareTag("Obstacle")) movingAllowed = true;
     }
 
     //jetpack
