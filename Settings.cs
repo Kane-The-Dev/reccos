@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using Photon.Pun;
+using Photon.Realtime;
 using TMPro;
 
 public class Settings : MonoBehaviourPunCallbacks
@@ -47,8 +48,12 @@ public class Settings : MonoBehaviourPunCallbacks
     public void OnClickQuit()
     {
         if (!gm.isSingleplayer)
-        PhotonNetwork.Disconnect();
+            PhotonNetwork.Disconnect();
         gm.inSettings = false;
+    }
+
+    public override void OnDisconnected(DisconnectCause cause)
+    {
         SceneManager.LoadScene("Menu");
     }
 

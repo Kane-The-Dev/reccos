@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class PlayerCustomization : MonoBehaviour
@@ -8,10 +9,9 @@ public class PlayerCustomization : MonoBehaviour
     GameManager gm;
     Vector3 rotationSpeed = new Vector3(0f, 1f, 0f);
 
-    [SerializeField]
-    Transform mainCam, display, headZoom, bodyZoom, legZoom;
-    [SerializeField]
-    GameObject footSelection;
+    [SerializeField] Transform mainCam, display, headZoom, bodyZoom, legZoom;
+    [SerializeField] GameObject footSelection;
+    [SerializeField] Toggle[] domFootToggle;
 
     public Vector3 targetPosition;
     public Quaternion targetRotation;
@@ -21,6 +21,9 @@ public class PlayerCustomization : MonoBehaviour
         gm = GameManager.instance;
         targetPosition = bodyZoom.localPosition;
         targetRotation = bodyZoom.localRotation;
+
+        gm.dominantFoot = PlayerPrefs.GetInt("DominantFoot", 1);
+        domFootToggle[PlayerPrefs.GetInt("DominantFoot", 1) + 1].isOn = true;
     }
 
     void Update()
@@ -33,9 +36,15 @@ public class PlayerCustomization : MonoBehaviour
 
     public void SetDominantFoot(bool enabled)
     {
+        if(EventSystem.current.currentSelectedGameObject == null) return;
+
         string selected = EventSystem.current.currentSelectedGameObject.name;
         if (int.TryParse(selected, out int result))
+        {
             gm.dominantFoot = result;
+            PlayerPrefs.SetInt("DominantFoot", result);
+            PlayerPrefs.Save();
+        }
     }
 
     public void SwitchView()
