@@ -39,13 +39,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         timeLeft = 0f;
         myID = 0;
 
-        camSensitivity = 1f;
-        gameLength = 300f;
-        scoreToWin = 3;
-        defaultSpeed = 8f; 
-        defaultJumpForce = 12f; 
-        defaultKickForce = 4.2f; 
-        PUSpawnRate = 1f;
+        //camSensitivity = 1f;
     }
 
     public override void OnEnable()
@@ -74,7 +68,15 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
 
         if (scene.name == "Lobby")
+        {
             regionDisplay = GameObject.FindWithTag("Region")?.GetComponent<TextMeshProUGUI>();
+            gameLength = 300f;
+            scoreToWin = 3;
+            defaultSpeed = 8f; 
+            defaultJumpForce = 12f; 
+            defaultKickForce = 4.2f; 
+            PUSpawnRate = 0.5f;
+        }
     }
 
     void Update()
