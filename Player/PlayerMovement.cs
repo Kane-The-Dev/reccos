@@ -159,8 +159,6 @@ public class PlayerMovement : MonoBehaviour
             if (!isGrounded)
             {
                 inAirTime += Time.deltaTime;
-                if (rb.velocity.y < 0 && !usingJetpack)
-                    rb.velocity += Physics.gravity * 0.5f * Time.deltaTime; // faster fall = better jump
             }
 
             if (!gm.gameEnded)
@@ -179,30 +177,20 @@ public class PlayerMovement : MonoBehaviour
                 movementZ = Input.GetAxisRaw("Vertical");
                 direction = new Vector3(movementX, 0f, movementZ).normalized;
             }
+            else
+            {
+                movementX = 0f;
+                movementZ = 0f;
+            }
             
             pc.SpeedUp(new Vector2(rb.velocity.x, rb.velocity.z).magnitude);
 
             if (direction.magnitude > 0.1f)
             {
-                float targetAngle = cam.eulerAngles.y;
-                float moveAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + targetAngle;
-                float angle = Mathf.SmoothDampAngle(
-                    transform.eulerAngles.y, 
-                    moveAngle, 
-                    ref turnSmoothVelocity, 
-                    turnSmoothTime
-                );
-                
                 if (movingAllowed && !isClimbing)
                 {
                     animator.SetBool("isClimbing", false);
                     animator.SetBool("isRunning", true);
-
-                    Vector3 moveDirection = Quaternion.Euler(0f,angle,0f) * Vector3.forward;
-                    Vector3 finalMoveDirection = CollideAndSlide(moveDirection, transform.position, 0);
-
-                    transform.rotation = Quaternion.Euler(transform.eulerAngles.x, angle, transform.eulerAngles.z);
-                    rb.velocity = new Vector3(finalMoveDirection.x * speed, rb.velocity.y, finalMoveDirection.z * speed);
                 }
                 else if (isClimbing) //climbing
                 {
@@ -213,9 +201,6 @@ public class PlayerMovement : MonoBehaviour
 
                     if (movementX > 0) animator.SetInteger("climbDirection", 2);
                     else if (movementX < 0) animator.SetInteger("climbDirection", 4);
-
-                    if (nextPosition != Vector3.zero)
-                        transform.position = Vector3.Lerp(transform.position, nextPosition, 4f * Time.deltaTime);
                 }
             }
             else
@@ -227,9 +212,6 @@ public class PlayerMovement : MonoBehaviour
                     animator.SetBool("isClimbing", true);
                     animator.SetInteger("climbDirection", 0);
                 }
-                
-                if (movingAllowed)
-                    rb.velocity = new Vector3(rb.velocity.x * 0.95f, rb.velocity.y, rb.velocity.z * 0.95f);
             }
             
             //dribbling
@@ -631,51 +613,104 @@ public class PlayerMovement : MonoBehaviour
     //jetpack
     void FixedUpdate()
     {
-        if ((view.IsMine || gm.isSingleplayer) && !gm.inSettings)
+        if (view.IsMine || gm.isSingleplayer)
         {
-            if (Input.GetButton("Jump") && usingJetpack && jumpsLeft > 0)
+            // Custom gravity logic
+            if (!isGrounded)
             {
-                isGrounded = false;
-                jetpackAnimator.SetBool("inAir", true);
+                if (rb.velocity.y < 0 && !usingJetpack)
+                    rb.velocity += Physics.gravity * 0.5f * Time.fixedDeltaTime; // faster fall = better jump
+            }
 
-                if (myTime > nextEmission)
+            // Movement physics logic
+            if (!gm.inSettings)
+            {
+                Vector3 direction = new Vector3(movementX, 0f, movementZ).normalized;
+
+                if (direction.magnitude > 0.1f)
                 {
-                    nextEmission = myTime + timeBetweenEmission;
-
-                    //Debug.Log(rb.velocity.y);
-                    
-                    if (transform.position.y >= 13f)
-                    rb.velocity = Vector3.Lerp(
-                        rb.velocity, 
-                        new Vector3(rb.velocity.x, jetpackForce, rb.velocity.z), 
-                        20f * Time.deltaTime
+                    float targetAngle = cam.eulerAngles.y;
+                    float moveAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + targetAngle;
+                    float angle = Mathf.SmoothDampAngle(
+                        transform.eulerAngles.y, 
+                        moveAngle, 
+                        ref turnSmoothVelocity, 
+                        turnSmoothTime,
+                        Mathf.Infinity,
+                        Time.fixedDeltaTime
                     );
-                    else
-                    rb.velocity += new Vector3(0f, jetpackForce * (0.4f + (13f - Mathf.Sqrt(transform.position.y)) / 20f), 0f);
+                    
+                    if (movingAllowed && !isClimbing)
+                    {
+                        Vector3 moveDirection = Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
+                        Vector3 finalMoveDirection = CollideAndSlide(moveDirection, transform.position, 0);
 
-                    nextEmission = nextEmission - myTime;
-                    myTime = 0f;
+                        rb.rotation = Quaternion.Euler(transform.eulerAngles.x, angle, transform.eulerAngles.z);
+                        rb.velocity = new Vector3(finalMoveDirection.x * speed, rb.velocity.y, finalMoveDirection.z * speed);
+                    }
+                    else if (isClimbing) // climbing lerp
+                    {
+                        if (nextPosition != Vector3.zero)
+                            transform.position = Vector3.Lerp(transform.position, nextPosition, 4f * Time.fixedDeltaTime);
+                    }
+                }
+                else
+                {
+                    if (movingAllowed)
+                        rb.velocity = new Vector3(rb.velocity.x * 0.95f, rb.velocity.y, rb.velocity.z * 0.95f);
                 }
             }
-            else if (!Input.GetButton("Jump")) jetpackAnimator.SetBool("inAir", false);
-            myTime += Time.fixedDeltaTime;
-
-            Vector3 direction = new Vector3(movementX, 0f, movementZ).normalized;
-            if (usingJetpack && !isGrounded && direction.magnitude > 0.1f) 
+            else
             {
-                model.transform.localRotation = Quaternion.Lerp(
-                    model.transform.localRotation,
-                    Quaternion.Euler(0f, 90f, 15f),
-                    Time.fixedDeltaTime * 5f
-                );
+                if (movingAllowed)
+                    rb.velocity = new Vector3(rb.velocity.x * 0.95f, rb.velocity.y, rb.velocity.z * 0.95f);
             }
-            else 
+
+            // Jetpack physics (existing logic updated to fixedDeltaTime)
+            if (!gm.inSettings)
             {
-                model.transform.localRotation = Quaternion.Lerp(
-                    model.transform.localRotation,
-                    Quaternion.Euler(0f, 90f, 0f),
-                    Time.fixedDeltaTime * 5f
-                );
+                if (Input.GetButton("Jump") && usingJetpack && jumpsLeft > 0)
+                {
+                    isGrounded = false;
+                    jetpackAnimator.SetBool("inAir", true);
+
+                    if (myTime > nextEmission)
+                    {
+                        nextEmission = myTime + timeBetweenEmission;
+
+                        if (transform.position.y >= 13f)
+                            rb.velocity = Vector3.Lerp(
+                                rb.velocity, 
+                                new Vector3(rb.velocity.x, jetpackForce, rb.velocity.z), 
+                                20f * Time.fixedDeltaTime
+                            );
+                        else
+                            rb.velocity += new Vector3(0f, jetpackForce * (0.4f + (13f - Mathf.Sqrt(transform.position.y)) / 20f), 0f);
+
+                        nextEmission = nextEmission - myTime;
+                        myTime = 0f;
+                    }
+                }
+                else if (!Input.GetButton("Jump")) jetpackAnimator.SetBool("inAir", false);
+                myTime += Time.fixedDeltaTime;
+
+                Vector3 direction = new Vector3(movementX, 0f, movementZ).normalized;
+                if (usingJetpack && !isGrounded && direction.magnitude > 0.1f) 
+                {
+                    model.transform.localRotation = Quaternion.Lerp(
+                        model.transform.localRotation,
+                        Quaternion.Euler(0f, 90f, 15f),
+                        Time.fixedDeltaTime * 5f
+                    );
+                }
+                else 
+                {
+                    model.transform.localRotation = Quaternion.Lerp(
+                        model.transform.localRotation,
+                        Quaternion.Euler(0f, 90f, 0f),
+                        Time.fixedDeltaTime * 5f
+                    );
+                }
             }
         }
     }
