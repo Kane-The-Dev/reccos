@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.EventSystems;
 using Photon.Pun;
 using Photon.Realtime;
@@ -29,13 +31,14 @@ public class Settings : MonoBehaviourPunCallbacks
         if (musicSlider != null) musicSlider.value = PlayerPrefs.GetFloat("MusicVolume", 1f);
         if (SFXSlider != null) SFXSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
         
-        if (brightSlider != null) brightSlider.value = PlayerPrefs.GetFloat("Brightness", 1f);
+        if (brightSlider != null) brightSlider.value = PlayerPrefs.GetFloat("Brightness", 0f);
         if (postProToggle != null) postProToggle.isOn = PlayerPrefs.GetInt("PostProcessing", 1) == 1;
         if (shakeToggle != null) shakeToggle.isOn = PlayerPrefs.GetInt("Screenshake", 1) == 1;
 
         if (camSenSlider != null) camSenSlider.value = PlayerPrefs.GetFloat("CameraSensitivity", 1f);
     }
 
+    /*
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.R))
@@ -44,6 +47,7 @@ public class Settings : MonoBehaviourPunCallbacks
             PlayerPrefs.Save();
         }
     }
+    */
 
     public void OnClickQuit()
     {
@@ -55,6 +59,22 @@ public class Settings : MonoBehaviourPunCallbacks
     public override void OnDisconnected(DisconnectCause cause)
     {
         SceneManager.LoadScene("Menu");
+    }
+
+    public void OnClickReset()
+    {
+        PlayerPrefs.DeleteAll();
+
+        if (musicSlider != null) musicSlider.value = PlayerPrefs.GetFloat("MusicVolume", 1f);
+        if (SFXSlider != null) SFXSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
+        
+        if (brightSlider != null) brightSlider.value = PlayerPrefs.GetFloat("Brightness", 0f);
+        if (postProToggle != null) postProToggle.isOn = PlayerPrefs.GetInt("PostProcessing", 1) == 1;
+        if (shakeToggle != null) shakeToggle.isOn = PlayerPrefs.GetInt("Screenshake", 1) == 1;
+
+        if (camSenSlider != null) camSenSlider.value = PlayerPrefs.GetFloat("CameraSensitivity", 1f);
+        
+        PlayerPrefs.Save();
     }
 
     public void CloseSettings()
@@ -86,12 +106,17 @@ public class Settings : MonoBehaviourPunCallbacks
 
     public void ChangeBrightness(float value)
     {
+        gm.brightness = value;
+        if (gm.volume && gm.volume.profile.TryGet(out ColorAdjustments ca))
+            ca.postExposure.value = value;
         PlayerPrefs.SetFloat("Brightness", value);
         PlayerPrefs.Save();
     }
 
     public void ChangePostProcessing(bool value)
     {
+        if (gm.volume)
+            gm.volume.enabled = value;
         PlayerPrefs.SetInt("PostProcessing", value ? 1 : 0);
         PlayerPrefs.Save();
     }

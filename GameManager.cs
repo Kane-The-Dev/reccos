@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using Photon.Pun;
 using ExitGames.Client.Photon;
 using TMPro;
@@ -9,18 +11,27 @@ using TMPro;
 public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager instance;
-    public bool isSingleplayer, shakeEnabled, gameEnded, inSettings = false;
-    public float camSensitivity, gameLength, defaultSpeed, defaultJumpForce, defaultKickForce, PUSpawnRate, timeLeft;
-    public int scoreToWin, dominantFoot, myID;
+
+    [Header("Settings")]
+    public int dominantFoot;
+    public float camSensitivity, brightness;
+    public bool isSingleplayer, shakeEnabled, inSettings = false;
     public bool[] PUToggle;
-    
-    public Transform mainCamera;
-    public string nickname, curRegion;
-    [SerializeField]
-    TextMeshProUGUI pingDisplay, regionDisplay, timer, FPSDisplay;
+
     float deltaTime = 0f;
-    
-    public int ping;
+    public Transform mainCamera;
+    TextMeshProUGUI FPSDisplay;
+    public Volume volume;
+
+    [Header("Multiplayer")]
+    public int myID;
+    public int ping, scoreToWin;
+    public float timeLeft;
+    public string nickname, curRegion;
+    [SerializeField] TextMeshProUGUI pingDisplay, regionDisplay, timer;
+
+    public bool gameEnded;
+    public float gameLength, defaultSpeed, defaultJumpForce, defaultKickForce, PUSpawnRate;
 
     void Awake()
     {
@@ -39,7 +50,16 @@ public class GameManager : MonoBehaviourPunCallbacks
         timeLeft = 0f;
         myID = 0;
 
-        //camSensitivity = 1f;
+        // Initialize default parameters to prevent zero values when bypassing the Lobby scene in singleplayer
+        gameLength          = 300f;
+        scoreToWin          = 3;
+        defaultSpeed        = 8f; 
+        defaultJumpForce    = 12f; 
+        defaultKickForce    = 4.2f; 
+        PUSpawnRate         = 0.5f;
+
+        camSensitivity  = PlayerPrefs.GetFloat("CameraSensitivity", 1f);
+        brightness      = PlayerPrefs.GetFloat("Brightness", 0f);
     }
 
     public override void OnEnable()
@@ -63,19 +83,23 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             GameObject.FindWithTag("Spawner").GetComponent<PUSpawner>().spawnRate = PUSpawnRate;
             pingDisplay = GameObject.FindWithTag("Ping")?.GetComponent<TextMeshProUGUI>();
-            timer = GameObject.FindWithTag("Time")?.GetComponent<TextMeshProUGUI>();
+            timer       = GameObject.FindWithTag("Time")?.GetComponent<TextMeshProUGUI>();
+            volume      = GameObject.FindWithTag("Post-process")?.GetComponent<Volume>();
+            if (volume.profile.TryGet(out ColorAdjustments ca))
+                ca.postExposure.value = brightness;
             timeLeft = gameLength + 3f;
         }
 
         if (scene.name == "Lobby")
         {
+            myID = 0;
             regionDisplay = GameObject.FindWithTag("Region")?.GetComponent<TextMeshProUGUI>();
-            gameLength = 300f;
-            scoreToWin = 3;
-            defaultSpeed = 8f; 
-            defaultJumpForce = 12f; 
-            defaultKickForce = 4.2f; 
-            PUSpawnRate = 0.5f;
+            gameLength          = 300f;
+            scoreToWin          = 3;
+            defaultSpeed        = 8f; 
+            defaultJumpForce    = 12f; 
+            defaultKickForce    = 4.2f; 
+            PUSpawnRate         = 0.5f;
         }
     }
 
